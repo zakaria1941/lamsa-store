@@ -790,6 +790,267 @@ input,select,textarea{font-family:'Cairo',sans-serif}
 .error-msg{font-size:11px;color:var(--error);margin-top:4px;font-weight:500}
 
 /* ============================================================
+   ADMIN PANEL
+   ============================================================ */
+.admin-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:9000;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--transition);
+}
+.admin-overlay.open{opacity:1;pointer-events:all}
+.admin-login-box{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.9);
+  background:var(--white);
+  border-radius:20px;
+  padding:32px 28px;
+  width:min(320px, calc(100vw - 40px));
+  z-index:9001;
+  text-align:center;
+  transition:all var(--transition);
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+}
+.admin-overlay.open .admin-login-box{transform:translate(-50%,-50%) scale(1)}
+.admin-login-icon{font-size:40px;margin-bottom:12px}
+.admin-login-title{font-size:20px;font-weight:800;margin-bottom:6px}
+.admin-login-sub{font-size:13px;color:var(--gray-400);margin-bottom:20px}
+.admin-login-input{
+  width:100%;height:50px;
+  border:1.5px solid var(--gray-200);
+  border-radius:10px;
+  padding:0 14px;
+  font-size:15px;
+  direction:rtl;
+  outline:none;
+  text-align:center;
+  letter-spacing:4px;
+  font-weight:700;
+  transition:border-color var(--transition);
+  margin-bottom:12px;
+}
+.admin-login-input:focus{border-color:var(--black)}
+.admin-login-input.error{border-color:var(--error);animation:shake 0.3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.admin-login-btn{
+  width:100%;height:50px;border-radius:50px;
+  background:var(--black);color:var(--white);
+  font-size:15px;font-weight:700;margin-bottom:10px;
+}
+.admin-login-cancel{font-size:13px;color:var(--gray-400);cursor:pointer}
+
+/* ADMIN PANEL FULL PAGE */
+.admin-panel{
+  position:fixed;inset:0;
+  background:#f5f5f5;
+  z-index:8500;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform 0.35s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.admin-panel.open{transform:translateX(0)}
+.admin-header{
+  background:var(--white);
+  border-bottom:1px solid var(--gray-200);
+  padding:0 20px;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.admin-header-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
+.admin-header-close{
+  width:38px;height:38px;
+  background:var(--gray-100);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;
+}
+.admin-body{
+  flex:1;overflow-y:auto;
+  padding:20px;
+  padding-bottom:100px;
+}
+.admin-add-btn{
+  width:100%;height:54px;
+  border-radius:14px;
+  background:var(--black);color:var(--white);
+  font-size:16px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:20px;
+}
+.admin-product-card{
+  background:var(--white);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+  display:flex;gap:12px;
+  align-items:flex-start;
+}
+.admin-product-img{
+  width:70px;height:70px;
+  border-radius:10px;
+  object-fit:cover;
+  background:var(--gray-100);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  overflow:hidden;
+}
+.admin-product-img img{width:100%;height:100%;object-fit:cover}
+.admin-product-info{flex:1;min-width:0}
+.admin-product-name{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-product-cat{font-size:11px;color:var(--gray-400);font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.admin-product-price{font-size:14px;font-weight:700;color:var(--black)}
+.admin-product-actions{display:flex;gap:8px;margin-top:8px}
+.admin-action-btn{
+  padding:6px 14px;border-radius:50px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:all var(--transition);
+}
+.admin-edit-btn{background:var(--gray-100);color:var(--black)}
+.admin-delete-btn{background:#fff0f0;color:var(--error)}
+
+/* PRODUCT FORM MODAL */
+.product-form-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:9500;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--transition);
+}
+.product-form-overlay.open{opacity:1;pointer-events:all}
+.product-form-panel{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--white);
+  border-radius:20px 20px 0 0;
+  z-index:9501;
+  max-height:95svh;
+  overflow-y:auto;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(.4,0,.2,1);
+}
+.product-form-panel.open{transform:translateY(0)}
+.form-header{
+  padding:16px 20px;
+  border-bottom:1px solid var(--gray-200);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--white);z-index:1;
+}
+.form-header h3{font-size:17px;font-weight:800}
+.form-body{padding:20px;padding-bottom:40px}
+.form-section-title{
+  font-size:12px;font-weight:700;
+  color:var(--gray-400);letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:10px;margin-top:20px;
+}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.color-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.color-tag{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:50px;
+  border:1.5px solid var(--gray-200);
+  font-size:13px;font-weight:600;cursor:pointer;
+}
+.color-tag-swatch{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,0.1)}
+.color-tag-remove{color:var(--gray-400);font-size:14px;margin-right:2px}
+.size-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.size-tag{
+  padding:6px 14px;border-radius:50px;
+  border:1.5px solid var(--gray-200);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all var(--transition);
+}
+.size-tag.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.media-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.media-thumb{
+  aspect-ratio:1;border-radius:8px;
+  background:var(--gray-100);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover}
+.media-thumb-remove{
+  position:absolute;top:4px;right:4px;
+  background:rgba(0,0,0,0.6);color:white;
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;
+}
+.media-add-btn{
+  aspect-ratio:1;border-radius:8px;
+  border:2px dashed var(--gray-200);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;
+  font-size:11px;font-weight:600;color:var(--gray-400);
+}
+.media-add-btn span{font-size:24px}
+.cat-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.cat-option{
+  padding:12px;border-radius:10px;
+  border:1.5px solid var(--gray-200);
+  font-size:13px;font-weight:600;
+  text-align:center;cursor:pointer;
+  transition:all var(--transition);
+}
+.cat-option.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.form-save-btn{
+  width:100%;height:54px;border-radius:50px;
+  background:var(--black);color:var(--white);
+  font-size:16px;font-weight:700;margin-top:24px;
+}
+.color-input-row{display:flex;gap:8px;margin-top:8px}
+.color-picker-wrap{
+  width:50px;height:50px;border-radius:10px;
+  border:1.5px solid var(--gray-200);overflow:hidden;
+  flex-shrink:0;cursor:pointer;position:relative;
+}
+.color-picker-wrap input[type=color]{
+  position:absolute;inset:-4px;
+  width:calc(100%+8px);height:calc(100%+8px);
+  border:none;outline:none;cursor:pointer;opacity:1;
+}
+.admin-empty{
+  text-align:center;padding:40px 20px;color:var(--gray-400);
+}
+.admin-empty-icon{font-size:48px;margin-bottom:12px}
+.admin-empty p{font-size:15px;font-weight:500}
+.delete-confirm-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:9800;
+  display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--transition);
+}
+.delete-confirm-overlay.open{opacity:1;pointer-events:all}
+.delete-confirm-box{
+  background:var(--white);
+  border-radius:20px 20px 0 0;
+  padding:24px;
+  width:100%;
+  transform:translateY(100%);
+  transition:transform var(--transition);
+}
+.delete-confirm-overlay.open .delete-confirm-box{transform:translateY(0)}
+.delete-confirm-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.delete-confirm-sub{font-size:14px;color:var(--gray-600);margin-bottom:20px;line-height:1.5}
+.delete-confirm-btns{display:flex;flex-direction:column;gap:10px}
+.delete-yes-btn{
+  height:50px;border-radius:50px;
+  background:#c0392b;color:var(--white);
+  font-size:15px;font-weight:700;
+}
+.delete-no-btn{
+  height:50px;border-radius:50px;
+  background:var(--gray-100);color:var(--black);
+  font-size:15px;font-weight:700;
+}
+
+/* ============================================================
    RESPONSIVE (desktop)
    ============================================================ */
 @media(min-width:768px){
@@ -890,7 +1151,7 @@ input,select,textarea{font-family:'Cairo',sans-serif}
     <a href="tel:0794412305">📞 تواصلي معنا: 0794412305</a>
     <a href="https://www.facebook.com" target="_blank">Facebook</a>
   </div>
-  <div class="footer-bottom">© 2025 لمسة — جميع الحقوق محفوظة</div>
+  <div class="footer-bottom">© 2025 لمسة — جميع الحقوق محفوظة <span onclick="openAdminLogin()" style="cursor:pointer;opacity:0.01;user-select:none">⚙</span></div>
 </footer>
 
 <!-- PRODUCT DETAIL MODAL -->
@@ -1024,6 +1285,129 @@ input,select,textarea{font-family:'Cairo',sans-serif}
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- ADMIN LOGIN OVERLAY -->
+<div class="admin-overlay" id="adminLoginOverlay">
+  <div class="admin-login-box">
+    <div class="admin-login-icon">🔐</div>
+    <div class="admin-login-title">لوحة الأدمين</div>
+    <div class="admin-login-sub">أدخلي كلمة السر للدخول</div>
+    <input type="password" class="admin-login-input" id="adminPwdInput" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+    <button class="admin-login-btn" onclick="checkAdminPwd()">دخول</button>
+    <div class="admin-login-cancel" onclick="closeAdminLogin()">إلغاء</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-header">
+    <div class="admin-header-title">⚙️ لوحة الأدمين</div>
+    <div class="admin-header-close" onclick="closeAdminPanel()">✕</div>
+  </div>
+  <div class="admin-body">
+    <button class="admin-add-btn" onclick="openProductForm(null)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      إضافة منتج جديد
+    </button>
+    <div id="adminProductList"></div>
+  </div>
+</div>
+
+<!-- PRODUCT FORM -->
+<div class="product-form-overlay" id="productFormOverlay" onclick="closeProductForm()"></div>
+<div class="product-form-panel" id="productFormPanel">
+  <div class="form-header">
+    <h3 id="formTitle">منتج جديد</h3>
+    <div class="admin-header-close" onclick="closeProductForm()">✕</div>
+  </div>
+  <div class="form-body">
+    <div class="form-section-title">المعلومات الأساسية</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">اسم المنتج *</label>
+      <input type="text" class="form-input" id="pNom" placeholder="مثال: جلابة قسنطينية فاخرة">
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">الوصف</label>
+      <textarea class="form-input" id="pDesc" placeholder="وصف المنتج..." rows="3" style="height:auto;padding:12px;resize:none"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">السعر (دج) *</label>
+        <input type="number" class="form-input" id="pPrix" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">المخزون</label>
+        <input type="number" class="form-input" id="pStock" placeholder="10" inputmode="numeric" value="10">
+      </div>
+    </div>
+
+    <div class="form-section-title">التصنيف</div>
+    <div class="cat-select-grid" id="catSelectGrid">
+      <div class="cat-option" data-cat="صنادل" onclick="selectCat(this)">👡 صنادل</div>
+      <div class="cat-option" data-cat="كلاكات" onclick="selectCat(this)">🩴 كلاكات</div>
+      <div class="cat-option" data-cat="صاك" onclick="selectCat(this)">👜 صاك</div>
+      <div class="cat-option" data-cat="جلابة" onclick="selectCat(this)">👗 جلابة</div>
+      <div class="cat-option" data-cat="صباط عراسي" onclick="selectCat(this)">💍 صباط عراسي</div>
+      <div class="cat-option" data-cat="أخرى" onclick="selectCat(this)">📦 أخرى</div>
+    </div>
+    <input type="hidden" id="pCategorie">
+
+    <div class="form-section-title">المقاسات <span style="font-size:10px;font-weight:400;color:var(--gray-400)">(اضغطي لإضافة/إزالة)</span></div>
+    <div class="size-tags" id="sizeTagsWrap">
+      <div class="size-tag" data-size="XS" onclick="toggleSize2(this)">XS</div>
+      <div class="size-tag" data-size="S" onclick="toggleSize2(this)">S</div>
+      <div class="size-tag" data-size="M" onclick="toggleSize2(this)">M</div>
+      <div class="size-tag" data-size="L" onclick="toggleSize2(this)">L</div>
+      <div class="size-tag" data-size="XL" onclick="toggleSize2(this)">XL</div>
+      <div class="size-tag" data-size="XXL" onclick="toggleSize2(this)">XXL</div>
+      <div class="size-tag" data-size="36" onclick="toggleSize2(this)">36</div>
+      <div class="size-tag" data-size="37" onclick="toggleSize2(this)">37</div>
+      <div class="size-tag" data-size="38" onclick="toggleSize2(this)">38</div>
+      <div class="size-tag" data-size="39" onclick="toggleSize2(this)">39</div>
+      <div class="size-tag" data-size="40" onclick="toggleSize2(this)">40</div>
+      <div class="size-tag" data-size="41" onclick="toggleSize2(this)">41</div>
+      <div class="size-tag" data-size="42" onclick="toggleSize2(this)">42</div>
+    </div>
+
+    <div class="form-section-title">الألوان</div>
+    <div class="color-input-row">
+      <div class="color-picker-wrap">
+        <input type="color" id="colorPicker" value="#C4A882" onchange="updateColorPreview()">
+      </div>
+      <div style="flex:1">
+        <input type="text" class="form-input" id="colorNameInput" placeholder="اسم اللون (مثال: بيج، أسود)" style="height:50px">
+      </div>
+      <button class="admin-action-btn admin-edit-btn" style="height:50px;padding:0 16px;flex-shrink:0" onclick="addColor()">+ إضافة</button>
+    </div>
+    <div class="color-tags" id="colorTagsContainer"></div>
+    <input type="hidden" id="pCouleur">
+
+    <div class="form-section-title">الصور والفيديوهات</div>
+    <p style="font-size:12px;color:var(--gray-400);margin-bottom:10px">يمكنك إضافة صور وفيديوهات من معرض صورك</p>
+    <div class="media-preview-grid" id="mediaGrid">
+      <div class="media-add-btn" onclick="document.getElementById('mediaInput').click()">
+        <span>📷</span>
+        إضافة وسائط
+      </div>
+    </div>
+    <input type="file" id="mediaInput" accept="image/*,video/*" multiple style="display:none" onchange="handleMediaUpload(event)">
+    <input type="hidden" id="pImage">
+
+    <button class="form-save-btn" onclick="saveProduct()">💾 حفظ المنتج</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="delete-confirm-overlay" id="deleteConfirmOverlay">
+  <div class="delete-confirm-box">
+    <div class="delete-confirm-title">حذف المنتج؟</div>
+    <div class="delete-confirm-sub">هذا الإجراء لا يمكن التراجع عنه. سيتم حذف المنتج نهائياً.</div>
+    <div class="delete-confirm-btns">
+      <button class="delete-yes-btn" onclick="confirmDelete()">🗑️ نعم، احذف</button>
+      <button class="delete-no-btn" onclick="closeDeleteConfirm()">إلغاء</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
