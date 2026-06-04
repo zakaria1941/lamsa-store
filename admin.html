@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إضافة منتج</title>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input, select, textarea, button { width: 100%; margin-bottom: 15px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        button { background: #28a745; color: white; font-weight: bold; border: none; cursor: pointer; }
+        h2 { text-align: center; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>إضافة منتج جديد</h2>
+    <form id="productForm">
+        <input type="text" id="name" placeholder="اسم المنتج" required>
+        <textarea id="desc" placeholder="وصف المنتج"></textarea>
+        <input type="number" id="price" placeholder="السعر (دج)" required>
+        
+        <select id="category">
+            <option value="فساتين">فساتين</option>
+            <option value="عبايات">عبايات</option>
+            <option value="أطقم">أطقم</option>
+            <option value="حقائب">حقائب</option>
+        </select>
+
+        <button type="submit" id="saveBtn">حفظ المنتج</button>
+    </form>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
