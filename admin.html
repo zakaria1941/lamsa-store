@@ -1,37 +1,610 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - إضافة منتج</title>
-    <style>
-        body { font-family: 'Cairo', sans-serif; background: #f4f4f9; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, select, textarea, button { width: 100%; margin-bottom: 15px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-        button { background: #28a745; color: white; font-weight: bold; border: none; cursor: pointer; }
-        h2 { text-align: center; color: #333; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>لمسة — لوحة الإدارة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Cairo',sans-serif;background:#f0f0f0;color:#111;direction:rtl;overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100svh}
+button{cursor:pointer;border:none;background:none;font-family:'Cairo',sans-serif}
+input,select,textarea{font-family:'Cairo',sans-serif}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+:root{--black:#111111;--white:#ffffff;--gray-100:#f5f5f5;--gray-200:#e8e8e8;--gray-400:#999999;--gray-600:#555555;--accent:#C4A882;--error:#c0392b;--success:#1a7a3a;--transition:0.22s cubic-bezier(.4,0,.2,1)}
+
+/* LOGIN */
+#loginPage{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%)}
+.login-card{background:var(--white);border-radius:24px;padding:36px 28px;width:100%;max-width:360px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.3)}
+.login-logo{font-size:36px;font-weight:900;color:var(--accent);letter-spacing:-0.03em;margin-bottom:4px}
+.login-subtitle{font-size:13px;color:var(--gray-400);margin-bottom:28px}
+.login-label{display:block;font-size:11px;font-weight:700;color:var(--gray-600);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;text-align:right}
+.login-input{width:100%;height:52px;border:1.5px solid var(--gray-200);border-radius:12px;padding:0 16px;font-size:15px;direction:rtl;outline:none;transition:border-color var(--transition);margin-bottom:14px;background:var(--gray-100)}
+.login-input:focus{border-color:var(--black);background:var(--white)}
+.login-input.shake{animation:shake 0.35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.login-btn{width:100%;height:52px;border-radius:50px;background:var(--black);color:var(--white);font-size:16px;font-weight:700;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.login-btn:active{transform:scale(0.97)}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed}
+.login-error{font-size:12px;color:var(--error);margin-top:10px;font-weight:600;display:none}
+.login-error.show{display:block}
+
+/* APP */
+#adminApp{display:none}
+#adminApp.show{display:flex;flex-direction:column;min-height:100svh}
+
+/* HEADER */
+.admin-header{background:var(--white);border-bottom:1px solid var(--gray-200);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+.admin-header-logo{font-size:20px;font-weight:900;color:var(--accent)}
+.admin-header-right{display:flex;align-items:center;gap:10px}
+.header-user{font-size:12px;color:var(--gray-400);font-weight:600}
+.logout-btn{padding:8px 16px;border-radius:50px;background:var(--gray-100);color:var(--gray-600);font-size:12px;font-weight:700}
+
+/* BODY */
+.admin-body{flex:1;padding:20px;padding-bottom:40px;max-width:680px;margin:0 auto;width:100%}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.stat-card{background:var(--white);border-radius:14px;padding:14px 12px;text-align:center}
+.stat-num{font-size:22px;font-weight:900;margin-bottom:2px}
+.stat-label{font-size:11px;color:var(--gray-400);font-weight:600}
+
+/* ADD BTN */
+.add-product-btn{width:100%;height:56px;border-radius:16px;background:var(--black);color:var(--white);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;transition:all var(--transition);box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+.add-product-btn:active{transform:scale(0.98)}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-input{width:100%;height:46px;border:1.5px solid var(--gray-200);border-radius:12px;padding:0 40px 0 16px;font-size:14px;direction:rtl;outline:none;background:var(--white);transition:border-color var(--transition)}
+.search-input:focus{border-color:var(--black)}
+
+/* PRODUCT LIST */
+.products-list-title{font-size:13px;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px}
+.product-admin-card{background:var(--white);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.product-admin-img{width:72px;height:72px;border-radius:12px;object-fit:cover;background:var(--gray-100);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px}
+.product-admin-img img{width:100%;height:100%;object-fit:cover}
+.product-admin-info{flex:1;min-width:0}
+.product-admin-name{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-admin-meta{font-size:11px;color:var(--gray-400);font-weight:600;margin-bottom:6px}
+.product-admin-price{font-size:15px;font-weight:800;color:var(--black)}
+.product-admin-actions{display:flex;gap:8px;margin-top:8px}
+.btn-edit{flex:1;height:36px;border-radius:50px;background:var(--gray-100);color:var(--black);font-size:13px;font-weight:700}
+.btn-delete{flex:1;height:36px;border-radius:50px;background:#fff0f0;color:var(--error);font-size:13px;font-weight:700}
+
+/* EMPTY + LOADING */
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray-400)}
+.empty-icon{font-size:56px;margin-bottom:14px}
+.empty-text{font-size:15px;font-weight:600;margin-bottom:6px;color:var(--gray-600)}
+.empty-sub{font-size:13px}
+.loading-wrap{text-align:center;padding:40px 20px;color:var(--gray-400)}
+.spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--gray-200);border-top-color:var(--black);animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity var(--transition)}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.product-form-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-radius:24px 24px 0 0;z-index:501;max-height:96svh;overflow-y:auto;transform:translateY(100%);transition:transform 0.38s cubic-bezier(.4,0,.2,1);-webkit-overflow-scrolling:touch}
+.product-form-drawer.open{transform:translateY(0)}
+.drawer-handle{width:40px;height:4px;background:var(--gray-200);border-radius:2px;margin:14px auto 0}
+.drawer-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gray-100);position:sticky;top:0;background:var(--white);z-index:1}
+.drawer-title{font-size:18px;font-weight:800}
+.drawer-close{width:36px;height:36px;border-radius:50%;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-600);cursor:pointer}
+.drawer-body{padding:20px;padding-bottom:50px}
+
+/* FORM */
+.f-section{font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.08em;text-transform:uppercase;margin:20px 0 10px}
+.f-section:first-child{margin-top:0}
+.f-group{margin-bottom:14px}
+.f-label{display:block;font-size:12px;font-weight:700;color:var(--gray-600);letter-spacing:0.04em;margin-bottom:6px}
+.f-input{width:100%;height:50px;border:1.5px solid var(--gray-200);border-radius:12px;padding:0 14px;font-size:15px;direction:rtl;outline:none;background:var(--white);transition:border-color var(--transition)}
+.f-input:focus{border-color:var(--black)}
+.f-input.error{border-color:var(--error)}
+.f-textarea{width:100%;min-height:90px;border:1.5px solid var(--gray-200);border-radius:12px;padding:12px 14px;font-size:14px;direction:rtl;outline:none;background:var(--white);resize:none;transition:border-color var(--transition);line-height:1.6}
+.f-textarea:focus{border-color:var(--black)}
+.f-row{display:flex;gap:10px}
+.f-row .f-group{flex:1}
+
+/* CATEGORIES */
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cat-btn{padding:12px 8px;border-radius:12px;border:1.5px solid var(--gray-200);font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:all var(--transition);background:var(--white)}
+.cat-btn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+
+/* SIZES */
+.sizes-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--gray-100);border-radius:12px;padding:14px 16px;cursor:pointer;margin-bottom:10px}
+.sizes-toggle-label{font-size:14px;font-weight:600}
+.toggle-switch{width:44px;height:26px;border-radius:50px;background:var(--gray-200);position:relative;transition:background var(--transition);flex-shrink:0}
+.toggle-switch.on{background:var(--black)}
+.toggle-knob{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--white);transition:all var(--transition);box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.toggle-switch.on .toggle-knob{right:auto;left:3px}
+.sizes-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.size-chip{min-width:46px;height:44px;border-radius:10px;border:1.5px solid var(--gray-200);font-size:13px;font-weight:700;padding:0 12px;cursor:pointer;transition:all var(--transition);background:var(--white)}
+.size-chip.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.add-size-row{display:flex;gap:8px;margin-top:10px}
+.add-size-input{flex:1;height:44px;border:1.5px solid var(--gray-200);border-radius:10px;padding:0 12px;font-size:14px;direction:rtl;outline:none}
+.add-size-btn{height:44px;padding:0 16px;border-radius:10px;background:var(--gray-100);color:var(--black);font-size:13px;font-weight:700;flex-shrink:0}
+
+/* COLORS */
+.color-input-row{display:flex;gap:8px;align-items:center}
+.color-picker-btn{width:50px;height:50px;border-radius:12px;border:2px solid var(--gray-200);flex-shrink:0;cursor:pointer;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.color-picker-btn input[type=color]{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);border:none;outline:none;cursor:pointer}
+.color-name-input{flex:1;height:50px;border:1.5px solid var(--gray-200);border-radius:12px;padding:0 14px;font-size:14px;direction:rtl;outline:none}
+.color-name-input:focus{border-color:var(--black)}
+.add-color-btn{height:50px;padding:0 16px;border-radius:50px;background:var(--black);color:var(--white);font-size:13px;font-weight:700;flex-shrink:0}
+.colors-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.color-chip{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:50px;border:1.5px solid var(--gray-200);font-size:13px;font-weight:600;background:var(--white)}
+.color-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.1);flex-shrink:0}
+.color-remove{width:18px;height:18px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;margin-right:2px;flex-shrink:0}
+
+/* MEDIA */
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.media-thumb{aspect-ratio:1;border-radius:12px;background:var(--gray-100);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover}
+.media-thumb-remove{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,0.65);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;z-index:2}
+.media-thumb-type{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.6);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+.media-add-zone{aspect-ratio:1;border-radius:12px;border:2px dashed var(--gray-200);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:11px;font-weight:600;color:var(--gray-400)}
+.media-add-zone span{font-size:28px}
+.uploading-indicator{text-align:center;padding:12px;font-size:13px;color:var(--gray-600);font-weight:600;display:none}
+.uploading-indicator.show{display:flex;align-items:center;justify-content:center;gap:8px}
+.upload-spinner{width:18px;height:18px;border-radius:50%;border:2px solid var(--gray-200);border-top-color:var(--black);animation:spin 0.6s linear infinite}
+
+/* SAVE */
+.save-btn{width:100%;height:56px;border-radius:50px;background:var(--black);color:var(--white);font-size:17px;font-weight:700;margin-top:24px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all var(--transition)}
+.save-btn:active{transform:scale(0.98)}
+.save-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* DELETE CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity var(--transition)}
+.confirm-overlay.open{opacity:1;pointer-events:all}
+.confirm-box{background:var(--white);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;transform:translateY(100%);transition:transform var(--transition)}
+.confirm-overlay.open .confirm-box{transform:translateY(0)}
+.confirm-title{font-size:19px;font-weight:800;margin-bottom:8px}
+.confirm-sub{font-size:14px;color:var(--gray-600);line-height:1.6;margin-bottom:22px}
+.confirm-btns{display:flex;flex-direction:column;gap:10px}
+.confirm-yes{height:52px;border-radius:50px;background:#c0392b;color:var(--white);font-size:15px;font-weight:700}
+.confirm-no{height:52px;border-radius:50px;background:var(--gray-100);color:var(--black);font-size:15px;font-weight:700}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--black);color:var(--white);padding:12px 22px;border-radius:50px;font-size:13px;font-weight:600;white-space:nowrap;z-index:9999;opacity:0;pointer-events:none;transition:all var(--transition)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#1a7a3a}
+.toast.error{background:var(--error)}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h2>إضافة منتج جديد</h2>
-    <form id="productForm">
-        <input type="text" id="name" placeholder="اسم المنتج" required>
-        <textarea id="desc" placeholder="وصف المنتج"></textarea>
-        <input type="number" id="price" placeholder="السعر (دج)" required>
-        
-        <select id="category">
-            <option value="فساتين">فساتين</option>
-            <option value="عبايات">عبايات</option>
-            <option value="أطقم">أطقم</option>
-            <option value="حقائب">حقائب</option>
-        </select>
-
-        <button type="submit" id="saveBtn">حفظ المنتج</button>
-    </form>
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">لمسة</div>
+    <div class="login-subtitle">لوحة إدارة المتجر</div>
+    <label class="login-label">البريد الإلكتروني</label>
+    <input type="email" class="login-input" id="loginEmail" placeholder="admin@example.com" autocomplete="email">
+    <label class="login-label">كلمة السر</label>
+    <input type="password" class="login-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-error" id="loginError">البريد أو كلمة السر غير صحيحة</div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      دخول
+    </button>
+  </div>
 </div>
 
-<script type="module" src="js/admin.js"></script>
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="admin-header">
+    <div class="admin-header-logo">لمسة ⚙️</div>
+    <div class="admin-header-right">
+      <span class="header-user" id="headerUser"></span>
+      <button class="logout-btn" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">منتج</div></div>
+      <div class="stat-card"><div class="stat-num" id="statCats">—</div><div class="stat-label">تصنيف</div></div>
+      <div class="stat-card"><div class="stat-num" id="statStock">—</div><div class="stat-label">في المخزون</div></div>
+    </div>
+    <button class="add-product-btn" onclick="openForm(null)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      إضافة منتج جديد
+    </button>
+    <div class="search-wrap">
+      <input type="search" class="search-input" id="searchInput" placeholder="🔍  بحث عن منتج..." oninput="filterProducts(this.value)">
+    </div>
+    <div class="products-list-title" id="listTitle">جميع المنتجات</div>
+    <div id="productsList"><div class="loading-wrap"><div class="spinner"></div>جاري التحميل...</div></div>
+  </div>
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeForm()"></div>
+
+<!-- PRODUCT FORM DRAWER -->
+<div class="product-form-drawer" id="productDrawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawerTitle">منتج جديد</div>
+    <div class="drawer-close" onclick="closeForm()">✕</div>
+  </div>
+  <div class="drawer-body">
+    <div class="f-section">المعلومات الأساسية</div>
+    <div class="f-group">
+      <label class="f-label">اسم المنتج *</label>
+      <input type="text" class="f-input" id="fName" placeholder="مثال: فستان سهرة أنيق">
+    </div>
+    <div class="f-group">
+      <label class="f-label">وصف المنتج</label>
+      <textarea class="f-textarea" id="fDesc" placeholder="أضيفي وصفاً مفصلاً للمنتج..."></textarea>
+    </div>
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">السعر (دج) *</label>
+        <input type="number" class="f-input" id="fPrice" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="f-group">
+        <label class="f-label">المخزون</label>
+        <input type="number" class="f-input" id="fStock" placeholder="10" inputmode="numeric" value="10">
+      </div>
+    </div>
+
+    <div class="f-section">التصنيف *</div>
+    <div class="cat-grid" id="catGrid">
+      <button class="cat-btn" data-cat="فساتين" onclick="selectCat(this)">👗 فساتين</button>
+      <button class="cat-btn" data-cat="عبايات" onclick="selectCat(this)">🧕 عبايات</button>
+      <button class="cat-btn" data-cat="أطقم" onclick="selectCat(this)">👔 أطقم</button>
+      <button class="cat-btn" data-cat="حقائب" onclick="selectCat(this)">👜 حقائب</button>
+      <button class="cat-btn" data-cat="أحذية" onclick="selectCat(this)">👠 أحذية</button>
+      <button class="cat-btn" data-cat="إكسسوارات" onclick="selectCat(this)">💍 إكسسوارات</button>
+      <button class="cat-btn" data-cat="صنادل" onclick="selectCat(this)">🩴 صنادل</button>
+      <button class="cat-btn" data-cat="جلابة" onclick="selectCat(this)">✨ جلابة</button>
+      <button class="cat-btn" data-cat="صباط عراسي" onclick="selectCat(this)">💒 صباط عراسي</button>
+      <button class="cat-btn" data-cat="أخرى" onclick="selectCat(this)">📦 أخرى</button>
+    </div>
+    <input type="hidden" id="fCategory">
+
+    <div class="f-section">المقاسات</div>
+    <div class="sizes-toggle" onclick="toggleSizesSection()">
+      <span class="sizes-toggle-label">المنتج يحتوي على مقاسات؟</span>
+      <div class="toggle-switch" id="sizesToggle"><div class="toggle-knob"></div></div>
+    </div>
+    <div id="sizesSection" style="display:none">
+      <div class="sizes-wrap" id="sizeChips">
+        <button class="size-chip" data-size="XS" onclick="toggleSizeChip(this)">XS</button>
+        <button class="size-chip" data-size="S" onclick="toggleSizeChip(this)">S</button>
+        <button class="size-chip" data-size="M" onclick="toggleSizeChip(this)">M</button>
+        <button class="size-chip" data-size="L" onclick="toggleSizeChip(this)">L</button>
+        <button class="size-chip" data-size="XL" onclick="toggleSizeChip(this)">XL</button>
+        <button class="size-chip" data-size="XXL" onclick="toggleSizeChip(this)">XXL</button>
+        <button class="size-chip" data-size="36" onclick="toggleSizeChip(this)">36</button>
+        <button class="size-chip" data-size="37" onclick="toggleSizeChip(this)">37</button>
+        <button class="size-chip" data-size="38" onclick="toggleSizeChip(this)">38</button>
+        <button class="size-chip" data-size="39" onclick="toggleSizeChip(this)">39</button>
+        <button class="size-chip" data-size="40" onclick="toggleSizeChip(this)">40</button>
+        <button class="size-chip" data-size="41" onclick="toggleSizeChip(this)">41</button>
+        <button class="size-chip" data-size="42" onclick="toggleSizeChip(this)">42</button>
+      </div>
+      <div class="add-size-row">
+        <input type="text" class="add-size-input" id="customSizeInput" placeholder="مقاس مخصص..." onkeydown="if(event.key==='Enter')addCustomSize()">
+        <button class="add-size-btn" onclick="addCustomSize()">+ إضافة</button>
+      </div>
+    </div>
+
+    <div class="f-section">الألوان</div>
+    <p style="font-size:12px;color:var(--gray-400);margin-bottom:10px">اكتبي اسم اللون أو اختاري لوناً ثم اضغطي إضافة</p>
+    <div class="color-input-row">
+      <div class="color-picker-btn" id="colorPickerBtn">
+        <input type="color" id="colorPicker" value="#C4A882" oninput="syncColorFromPicker()">
+      </div>
+      <input type="text" class="color-name-input" id="colorNameInput" placeholder="مثال: أسود، بيج، أحمر..." oninput="syncColorFromName(this.value)" onkeydown="if(event.key==='Enter')addColor()">
+      <button class="add-color-btn" onclick="addColor()">إضافة</button>
+    </div>
+    <div class="colors-preview" id="colorsPreview"></div>
+
+    <div class="f-section">الصور والفيديوهات</div>
+    <p style="font-size:12px;color:var(--gray-400);margin-bottom:10px">يمكنك إضافة حتى 10 صور أو فيديو من معرض هاتفك</p>
+    <div class="media-grid" id="mediaGrid">
+      <div class="media-add-zone" onclick="document.getElementById('mediaFileInput').click()">
+        <span>📷</span>إضافة
+      </div>
+    </div>
+    <div class="uploading-indicator" id="uploadingIndicator">
+      <div class="upload-spinner"></div>جاري الرفع...
+    </div>
+    <input type="file" id="mediaFileInput" accept="image/*,video/*" multiple style="display:none" onchange="handleMediaFiles(event)">
+
+    <button class="save-btn" id="saveBtn" onclick="saveProduct()">💾 حفظ المنتج</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title">🗑️ حذف المنتج؟</div>
+    <div class="confirm-sub" id="confirmSub">سيتم حذف هذا المنتج نهائياً ولا يمكن التراجع.</div>
+    <div class="confirm-btns">
+      <button class="confirm-yes" onclick="confirmDelete()">نعم، احذف</button>
+      <button class="confirm-no" onclick="closeConfirm()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAt1zVVJ_Czk4ts9r4BrwxWtTAUk7dw-7U",
+  authDomain: "lamsa-store-5d57a.firebaseapp.com",
+  projectId: "lamsa-store-5d57a",
+  storageBucket: "lamsa-store-5d57a.firebasestorage.app",
+  messagingSenderId: "434759373655",
+  appId: "1:434759373655:web:8d8f4ca8eeb422f5d3a412"
+};
+const CLOUD = "dcc9vnw5d";
+const PRESET = "lamsa_unsigned";
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+let allProducts = [], editingId = null, deleteId = null;
+let mediaFiles = [], sizesOn = false, selectedColors = [];
+
+// AUTH
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminApp').classList.add('show');
+    document.getElementById('headerUser').textContent = user.email;
+    loadProducts();
+  } else {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('adminApp').classList.remove('show');
+  }
+});
+
+window.doLogin = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('loginError');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'جاري الدخول...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.classList.add('show');
+    const inp = document.getElementById('loginPassword');
+    inp.classList.add('shake');
+    setTimeout(() => inp.classList.remove('shake'), 400);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> دخول`;
+  }
+};
+window.doLogout = () => signOut(auth);
+
+// LOAD
+async function loadProducts() {
+  document.getElementById('productsList').innerHTML = '<div class="loading-wrap"><div class="spinner"></div>جاري التحميل...</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'products'), orderBy('createdAt','desc')));
+    allProducts = snap.docs.map(d => ({id:d.id,...d.data()}));
+  } catch(e) {
+    try {
+      const snap = await getDocs(collection(db,'products'));
+      allProducts = snap.docs.map(d => ({id:d.id,...d.data()}));
+    } catch(e2) { allProducts = []; }
+  }
+  renderProducts(allProducts);
+  updateStats(allProducts);
+}
+
+function updateStats(p) {
+  document.getElementById('statTotal').textContent  = p.length;
+  document.getElementById('statCats').textContent   = new Set(p.map(x=>x.category)).size;
+  document.getElementById('statStock').textContent  = p.filter(x=>(x.stock||0)>0).length;
+}
+
+function renderProducts(list) {
+  const el = document.getElementById('productsList');
+  document.getElementById('listTitle').textContent = list.length ? `${list.length} منتج` : 'لا توجد منتجات';
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍️</div><div class="empty-text">لا توجد منتجات بعد</div><div class="empty-sub">اضغطي على "إضافة منتج جديد" للبدء</div></div>`;
+    return;
+  }
+  const EMOJIS = {'فساتين':'👗','عبايات':'🧕','أطقم':'👔','حقائب':'👜','أحذية':'👠','إكسسوارات':'💍','صنادل':'🩴','جلابة':'✨','صباط عراسي':'💒'};
+  el.innerHTML = list.map(p => {
+    const img = Array.isArray(p.media) && p.media.length ? p.media[0] : (p.image||'');
+    const imgEl = img ? `<div class="product-admin-img"><img src="${e(img)}" alt="" onerror="this.parentElement.innerHTML='${EMOJIS[p.category]||'📦'}'"></div>`
+                       : `<div class="product-admin-img">${EMOJIS[p.category]||'📦'}</div>`;
+    return `<div class="product-admin-card">${imgEl}<div class="product-admin-info">
+      <div class="product-admin-name">${e(p.name||'')}</div>
+      <div class="product-admin-meta">${e(p.category||'')} · مخزون: ${p.stock||0}</div>
+      <div class="product-admin-price">${Math.round(p.price||0).toLocaleString()} دج</div>
+      <div class="product-admin-actions">
+        <button class="btn-edit" onclick="openForm('${p.id}')">✏️ تعديل</button>
+        <button class="btn-delete" onclick="askDelete('${p.id}','${e(p.name||'')}')">🗑️ حذف</button>
+      </div></div></div>`;
+  }).join('');
+}
+
+window.filterProducts = v => renderProducts(v ? allProducts.filter(p=>(p.name||'').includes(v)||(p.category||'').includes(v)) : allProducts);
+
+// FORM
+window.openForm = (id) => {
+  editingId = id;
+  resetForm();
+  if (id) {
+    const p = allProducts.find(x=>x.id===id);
+    if (!p) return;
+    document.getElementById('drawerTitle').textContent = 'تعديل المنتج';
+    document.getElementById('fName').value  = p.name||'';
+    document.getElementById('fDesc').value  = p.description||'';
+    document.getElementById('fPrice').value = p.price||'';
+    document.getElementById('fStock').value = p.stock??10;
+    document.getElementById('fCategory').value = p.category||'';
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat===p.category));
+    if (p.sizes?.length) {
+      sizesOn = true; updateSizesToggle();
+      p.sizes.forEach(s => { const c=document.querySelector(`.size-chip[data-size="${s}"]`); c?c.classList.add('active'):addCustomSizeChip(s); });
+    }
+    if (Array.isArray(p.colors)) { selectedColors=[...p.colors]; renderColorsPreview(); }
+    if (Array.isArray(p.media)) { mediaFiles=p.media.map(url=>({cloudUrl:url,type:url.match(/\.(mp4|mov|webm)/i)?'video':'image'})); renderMediaGrid(); }
+  } else {
+    document.getElementById('drawerTitle').textContent = 'منتج جديد';
+  }
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.getElementById('productDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeForm = () => {
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('productDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+function resetForm() {
+  ['fName','fDesc','fPrice'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('fStock').value = '10';
+  document.getElementById('fCategory').value = '';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.size-chip').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.size-chip.custom').forEach(b=>b.remove());
+  sizesOn=false; updateSizesToggle();
+  selectedColors=[]; renderColorsPreview();
+  mediaFiles=[]; renderMediaGrid();
+  document.getElementById('fName').classList.remove('error');
+  document.getElementById('fPrice').classList.remove('error');
+}
+
+window.selectCat = btn => { document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.getElementById('fCategory').value=btn.dataset.cat; };
+
+window.toggleSizesSection = () => { sizesOn=!sizesOn; updateSizesToggle(); };
+function updateSizesToggle() {
+  document.getElementById('sizesToggle').classList.toggle('on',sizesOn);
+  document.getElementById('sizesSection').style.display = sizesOn?'block':'none';
+}
+window.toggleSizeChip = btn => btn.classList.toggle('active');
+window.addCustomSize = () => { const i=document.getElementById('customSizeInput'); if(i.value.trim()){addCustomSizeChip(i.value.trim());i.value='';} };
+function addCustomSizeChip(v) {
+  const b=document.createElement('button');
+  b.className='size-chip custom active'; b.dataset.size=v; b.textContent=v;
+  b.onclick=()=>b.classList.toggle('active');
+  document.getElementById('sizeChips').appendChild(b);
+}
+
+const ARABIC_COLORS={'أسود':'#111111','أبيض':'#ffffff','أحمر':'#e53935','أزرق':'#1565c0','أخضر':'#2e7d32','أصفر':'#f9a825','برتقالي':'#e65100','وردي':'#e91e63','بنفسجي':'#6a1b9a','بني':'#4e342e','رمادي':'#757575','بيج':'#c8a97e','ذهبي':'#d4af37','فضي':'#9e9e9e','كحلي':'#1a237e','تركوازي':'#00796b','زيتي':'#33691e','خمري':'#880e4f','لبني':'#fafafa','كريمي':'#fff8e1'};
+window.syncColorFromName = v => { const h=ARABIC_COLORS[v.trim()]; if(h){document.getElementById('colorPicker').value=h; document.getElementById('colorPickerBtn').style.background=h;} };
+window.syncColorFromPicker = () => { document.getElementById('colorPickerBtn').style.background=document.getElementById('colorPicker').value; };
+window.addColor = () => {
+  const name=document.getElementById('colorNameInput').value.trim();
+  const hex=document.getElementById('colorPicker').value;
+  if(!name){showToast('اكتبي اسم اللون','error');return;}
+  if(selectedColors.find(c=>c.name===name)){showToast('هذا اللون موجود مسبقاً','error');return;}
+  selectedColors.push({name,hex}); renderColorsPreview(); document.getElementById('colorNameInput').value='';
+};
+function renderColorsPreview() {
+  document.getElementById('colorsPreview').innerHTML = selectedColors.map((c,i)=>`
+    <div class="color-chip"><div class="color-dot" style="background:${c.hex}"></div>${e(c.name)}<div class="color-remove" onclick="removeColor(${i})">✕</div></div>`).join('');
+}
+window.removeColor = i => { selectedColors.splice(i,1); renderColorsPreview(); };
+
+window.handleMediaFiles = async (event) => {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  const remaining = 10 - mediaFiles.length;
+  if (remaining<=0){showToast('الحد الأقصى 10 وسائط','error');return;}
+  const toUp = files.slice(0,remaining);
+  document.getElementById('uploadingIndicator').classList.add('show');
+  document.getElementById('saveBtn').disabled = true;
+  for (const file of toUp) {
+    try {
+      const type = file.type.startsWith('video')?'video':'image';
+      const fd = new FormData();
+      fd.append('file',file); fd.append('upload_preset',PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${type}/upload`,{method:'POST',body:fd});
+      if (!res.ok) throw new Error('upload failed');
+      const data = await res.json();
+      mediaFiles.push({cloudUrl:data.secure_url,type});
+      renderMediaGrid();
+    } catch(err) { showToast('فشل رفع: '+file.name,'error'); }
+  }
+  document.getElementById('uploadingIndicator').classList.remove('show');
+  document.getElementById('saveBtn').disabled = false;
+  event.target.value='';
+};
+
+function renderMediaGrid() {
+  const g = document.getElementById('mediaGrid');
+  const thumbs = mediaFiles.map((m,i)=>{
+    const prev = m.type==='video'
+      ? `<video src="${m.cloudUrl}" style="width:100%;height:100%;object-fit:cover"></video><div class="media-thumb-type">فيديو</div>`
+      : `<img src="${m.cloudUrl}" alt="">`;
+    return `<div class="media-thumb">${prev}<div class="media-thumb-remove" onclick="removeMedia(${i})">✕</div></div>`;
+  }).join('');
+  const add = mediaFiles.length<10 ? `<div class="media-add-zone" onclick="document.getElementById('mediaFileInput').click()"><span>📷</span>إضافة</div>` : '';
+  g.innerHTML = thumbs + add;
+}
+window.removeMedia = i => { mediaFiles.splice(i,1); renderMediaGrid(); };
+
+window.saveProduct = async () => {
+  const name  = document.getElementById('fName').value.trim();
+  const price = parseFloat(document.getElementById('fPrice').value);
+  let valid = true;
+  if(!name){document.getElementById('fName').classList.add('error');valid=false;}else document.getElementById('fName').classList.remove('error');
+  if(!price||isNaN(price)){document.getElementById('fPrice').classList.add('error');valid=false;}else document.getElementById('fPrice').classList.remove('error');
+  if(!valid){showToast('يرجى ملء الحقول المطلوبة','error');return;}
+  const sizes = sizesOn ? Array.from(document.querySelectorAll('.size-chip.active')).map(b=>b.dataset.size) : [];
+  const mediaUrls = mediaFiles.map(m=>m.cloudUrl);
+  const firstImg  = mediaUrls.find(u=>!u.match(/\.(mp4|mov|webm)/i))||'';
+  const data = {
+    name, description:document.getElementById('fDesc').value.trim(),
+    price, stock:parseInt(document.getElementById('fStock').value)||0,
+    category:document.getElementById('fCategory').value,
+    sizes, colors:selectedColors, media:mediaUrls, image:firstImg,
+    updatedAt:new Date().toISOString()
+  };
+  const btn = document.getElementById('saveBtn');
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  try {
+    if (editingId) {
+      await updateDoc(doc(db,'products',editingId),data);
+      showToast('✅ تم تحديث المنتج','success');
+    } else {
+      data.createdAt=new Date().toISOString();
+      await addDoc(collection(db,'products'),data);
+      showToast('✅ تم إضافة المنتج','success');
+    }
+    closeForm(); await loadProducts();
+  } catch(err) { showToast('خطأ: '+err.message,'error'); }
+  finally { btn.disabled=false; btn.textContent='💾 حفظ المنتج'; }
+};
+
+window.askDelete = (id,name) => { deleteId=id; document.getElementById('confirmSub').textContent=`سيتم حذف "${name}" نهائياً.`; document.getElementById('confirmOverlay').classList.add('open'); };
+window.closeConfirm = () => { document.getElementById('confirmOverlay').classList.remove('open'); deleteId=null; };
+window.confirmDelete = async () => {
+  if(!deleteId) return;
+  try { await deleteDoc(doc(db,'products',deleteId)); showToast('🗑️ تم الحذف','success'); closeConfirm(); await loadProducts(); }
+  catch(err) { showToast('خطأ في الحذف','error'); }
+};
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type||'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',3000);
+}
+function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+document.getElementById('colorPickerBtn').style.background = document.getElementById('colorPicker').value;
+</script>
 </body>
 </html>
