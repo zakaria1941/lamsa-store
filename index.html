@@ -1029,7 +1029,7 @@ input,select,textarea{font-family:'Cairo',sans-serif}
 /* ============================================================
    FIREBASE CONFIG
    ============================================================ */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpitOmbXHuAv84l_Ed2vR7kJKys4zjttIIWmIVD3kd3S6Z-2FApwmDpvSF3k25HIjsJg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAJ4BwshL5VpIUV4hrDVNbl8na49gNXCLPmpFYdtmmLaf7LKgiAzfqHBxPheYA547GtQ/exec';
 
 /* ============================================================
    STATE
@@ -1341,7 +1341,11 @@ function openProduct(id){
       if(isHex){
         return `<div class="color-dot" style="background:${c}" onclick="selectColorDot(this,'${c}')" title="${c}"></div>`;
       } else {
-        return `<button class="size-btn" onclick="selectColorBtn(this,'${c}')">${c}</button>`;
+        // Try to use the color name as CSS color, fallback to showing as button with dot
+        return `<div style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="selectColorBtn(this,'${c}')">
+          <div class="color-dot" style="background:${c};border:1.5px solid #ddd" title="${c}"></div>
+          <span style="font-size:12px">${c}</span>
+        </div>`;
       }
     }).join('');
     if(colors.length===1){
@@ -1573,21 +1577,24 @@ async function submitOrder(){
   };
 
   try {
-    if(APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxAJ4BwshL5VpIUV4hrDVNbl8na49gNXCLPmpFYdtmmLaf7LKgiAzfqHBxPheYA547GtQ/exec'){
-      fetch(APPS_SCRIPT_URL, {
-        method:'POST',
-        mode:'no-cors',
-        body: JSON.stringify(orderData)
-      });
-    }
-    // Clear cart if it was a cart checkout
+    // Send to Apps Script (Google Sheets + Telegram)
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(orderData));
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    }).catch(() => {});
+
+    // Clear cart
     if(orderItems.length > 1 || cart.some(c=>c.id===orderItems[0]?.id)){
       cart=[];saveCart();updateCartUI();
     }
     closeOrder();
     showSuccess(orderNum);
     clearForm();
-
 
   } catch(e) {
     btn.disabled=false;
