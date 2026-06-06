@@ -1027,12 +1027,8 @@ input,select,textarea{font-family:'Cairo',sans-serif}
 
 <script>
 /* ============================================================
-   GOOGLE SHEETS CONFIG
+   FIREBASE CONFIG
    ============================================================ */
-const SHEET_ID = '2PACX-1vR-FkA-vuVACSvOkG0TWgs-YMWYgkSShRpfpBgipL71BMJSONUCDaeR8mEoj8-AasWAP9VP7JywshIx';
-const PRODUCTS_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv&gid=0`;
-
-// ⚠️ REMPLACEZ CETTE URL par votre Apps Script URL après déploiement
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpitOmbXHuAv84l_Ed2vR7kJKys4zjttIIWmIVD3kd3S6Z-2FApwmDpvSF3k25HIjsJg/exec';
 
 /* ============================================================
@@ -1083,19 +1079,60 @@ function populateWilayas(){
 }
 
 /* ============================================================
-   LOAD PRODUCTS FROM GOOGLE SHEETS
+   LOAD PRODUCTS FROM FIREBASE
    ============================================================ */
 async function loadProducts(){
   try {
-    const res = await fetch(PRODUCTS_URL);
-    if (!res.ok) throw new Error('fetch failed');
-    const csv = await res.text();
-    allProducts = parseCSV(csv);
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore, collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const firebaseConfig = {
+      apiKey: "AIzaSyAt1zVVJ_Czk4ts9r4BrwxWtTAUk7dw-7U",
+      authDomain: "lamsa-store-5d57a.firebaseapp.com",
+      projectId: "lamsa-store-5d57a",
+      storageBucket: "lamsa-store-5d57a.firebasestorage.app",
+      messagingSenderId: "434759373655",
+      appId: "1:434759373655:web:8d8f4ca8eeb422f5d3a412"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'products'), orderBy('createdAt','desc')));
+    } catch(e2) {
+      snap = await getDocs(collection(db,'products'));
+    }
+    const fbProducts = snap.docs.map(d => {
+      const p = d.data();
+      // normalize Firebase product to match site format
+      const colors = Array.isArray(p.colors)
+        ? p.colors.map(c => c.hex || c).join(',')
+        : (p.couleur || '');
+      const sizes = Array.isArray(p.sizes) ? p.sizes.join(',') : (p.taille || '');
+      // get first image from media array or image field
+      const image = (Array.isArray(p.media) && p.media.length) ? p.media[0] : (p.image || '');
+      return {
+        id: d.id,
+        nom: p.name || p.nom || '',
+        desc: p.description || p.desc || '',
+        prix: parseFloat(p.price || p.prix || 0),
+        categorie: p.category || p.categorie || '',
+        taille: sizes,
+        couleur: colors,
+        stock: parseInt(p.stock || 1),
+        image: image,
+        media: p.media || (image ? [image] : [])
+      };
+    });
+    if (fbProducts.length > 0) {
+      allProducts = fbProducts;
+    } else {
+      allProducts = getDemoProducts();
+    }
     filteredProducts = [...allProducts];
     renderCategories();
     renderProducts(filteredProducts);
   } catch(e) {
-    console.warn('Sheets fetch failed, using demo data:', e);
+    console.warn('Firebase fetch failed, using demo data:', e);
     allProducts = getDemoProducts();
     filteredProducts = [...allProducts];
     renderCategories();
@@ -1273,8 +1310,11 @@ function openProduct(id){
   modalQty = 1;
   document.getElementById('modalQtyNum').textContent = '1';
 
-  document.getElementById('modalImg').src = p.image || '';
-  document.getElementById('modalImg').style.display = p.image ? 'block' : 'none';
+  // Support multiple images from Firebase media array
+  const modalImgEl = document.getElementById('modalImg');
+  const firstImg = (Array.isArray(p.media) && p.media.length) ? p.media[0] : (p.image || '');
+  modalImgEl.src = firstImg || '';
+  modalImgEl.style.display = firstImg ? 'block' : 'none';
   document.getElementById('modalCat').textContent = p.categorie;
   document.getElementById('modalName').textContent = p.nom;
   document.getElementById('modalPrice').textContent = formatPrice(p.prix);
@@ -1296,14 +1336,10 @@ function openProduct(id){
   if(p.couleur){
     colorsWrap.style.display='block';
     const colors = p.couleur.split(',').map(c=>c.trim()).filter(Boolean);
-    const CSS_COLORS = ['red','blue','green','black','white','yellow','orange','pink','purple','brown','grey','gray','beige','navy','gold','silver','noir','blanc','rouge','bleu','vert','rose','beige','marron','gris','jaune','violet'];
     colorsEl.innerHTML = colors.map(c => {
       const isHex = c.startsWith('#') || c.startsWith('rgb');
-      const isCssNamed = CSS_COLORS.includes(c.toLowerCase());
       if(isHex){
         return `<div class="color-dot" style="background:${c}" onclick="selectColorDot(this,'${c}')" title="${c}"></div>`;
-      } else if(isCssNamed){
-        return `<div class="color-dot" style="background:${c.toLowerCase()}" onclick="selectColorDot(this,'${c}')" title="${c}"></div>`;
       } else {
         return `<button class="size-btn" onclick="selectColorBtn(this,'${c}')">${c}</button>`;
       }
@@ -1537,7 +1573,7 @@ async function submitOrder(){
   };
 
   try {
-    if(APPS_SCRIPT_URL !== 'VOTRE_APPS_SCRIPT_URL_ICI'){
+    if(APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbwpitOmbXHuAv84l_Ed2vR7kJKys4zjttIIWmIVD3kd3S6Z-2FApwmDpvSF3k25HIjsJg/exec'){
       fetch(APPS_SCRIPT_URL, {
         method:'POST',
         mode:'no-cors',
