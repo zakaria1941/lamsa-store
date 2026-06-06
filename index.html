@@ -1577,10 +1577,24 @@ async function submitOrder(){
   };
 
   try {
-    // Send to Apps Script (Google Sheets + Telegram)
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(orderData));
+    // Send to Telegram directly
+    const TG_TOKEN = '8599457433:AAHuIa7qAhl5vxKPTw8tolQOhQXQiNyA_uU';
+    const TG_CHAT  = '-5107361887';
+    const msg = 
+      '🛍️ طلب جديد: ' + orderData.num_comnd + '\n' +
+      '👤 الاسم: ' + orderData.nom_client + '\n' +
+      '📞 الهاتف: ' + orderData.telephone + '\n' +
+      '📍 الولاية: ' + orderData.wilaya + '\n' +
+      '🚚 التوصيل: ' + orderData.livraison + '\n' +
+      '📦 المنتجات: ' + orderData.Produits + '\n' +
+      '💰 المجموع: ' + orderData.total + ' دج';
+    fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT, text: msg })
+    }).catch(() => {});
 
+    // Also send to Apps Script for Google Sheets
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
