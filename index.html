@@ -1395,13 +1395,21 @@ function closeModal(){
 }
 
 function toggleSize(s, btn){
-  const idx = selectedSizes.indexOf(s);
-  if(idx === -1){
-    selectedSizes.push(s);
-    btn.classList.add('selected');
+  if(modalQty >= 2){
+    // multi select
+    const idx = selectedSizes.indexOf(s);
+    if(idx === -1){
+      selectedSizes.push(s);
+      btn.classList.add('selected');
+    } else {
+      selectedSizes.splice(idx,1);
+      btn.classList.remove('selected');
+    }
   } else {
-    selectedSizes.splice(idx,1);
-    btn.classList.remove('selected');
+    // single select only
+    selectedSizes = [s];
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
   }
   selectedSize = selectedSizes[0] || '';
 }
