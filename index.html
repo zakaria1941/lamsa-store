@@ -1039,8 +1039,9 @@ let filteredProducts = [];
 let cart = JSON.parse(localStorage.getItem('lamsa_cart') || '[]');
 let currentProduct = null;
 let selectedSize = '';
-let selectedSizes = []; // multi-size support
-let selectedColor = '';
+let selectedSizes  = []; // multi-size support
+let selectedColors = []; // multi-color support
+let selectedColor  = '';
 let selectedLivraison = 'domicile';
 let orderItems = [];
 let modalQty = 1;
@@ -1304,9 +1305,10 @@ function openProduct(id){
   const p = allProducts.find(x=>x.id===id);
   if(!p) return;
   currentProduct = p;
-  selectedSize = '';
-  selectedSizes = [];
-  selectedColor = '';
+  selectedSize   = '';
+  selectedSizes  = [];
+  selectedColor  = '';
+  selectedColors = [];
   modalQty = 1;
   document.getElementById('modalQtyNum').textContent = '1';
 
@@ -1411,16 +1413,42 @@ function selectSizeBtn(btn){
 function changeModalQty(delta){
   modalQty = Math.max(1, modalQty + delta);
   document.getElementById('modalQtyNum').textContent = modalQty;
+  // If qty drops back to 1, keep only first selected color/size
+  if(modalQty === 1){
+    if(selectedColors.length > 1){
+      selectedColors = [selectedColors[0]];
+      selectedColor  = selectedColors[0];
+      document.querySelectorAll('.color-dot').forEach((d,i)=>{ if(i>0) d.classList.remove('selected'); });
+    }
+    if(selectedSizes.length > 1){
+      selectedSizes = [selectedSizes[0]];
+      selectedSize  = selectedSizes[0];
+      document.querySelectorAll('.size-btn').forEach((d,i)=>{ if(i>0) d.classList.remove('selected'); });
+    }
+  }
 }
 function selectColorBtn(btn, color){
-  selectedColor=color;
-  document.querySelectorAll('#modalColors .size-btn, #modalColors .color-dot').forEach(d=>d.classList.remove('selected'));
-  btn.classList.add('selected');
+  if(modalQty >= 2){
+    // multi select
+    if(selectedColors.includes(color)){ selectedColors=selectedColors.filter(c=>c!==color); btn.classList.remove('selected'); }
+    else { selectedColors.push(color); btn.classList.add('selected'); }
+  } else {
+    selectedColors=[color];
+    document.querySelectorAll('#modalColors .size-btn, #modalColors .color-dot').forEach(d=>d.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+  selectedColor = selectedColors[0]||'';
 }
 function selectColorDot(el, color){
-  selectedColor=color;
-  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
-  el.classList.add('selected');
+  if(modalQty >= 2){
+    if(selectedColors.includes(color)){ selectedColors=selectedColors.filter(c=>c!==color); el.classList.remove('selected'); }
+    else { selectedColors.push(color); el.classList.add('selected'); }
+  } else {
+    selectedColors=[color];
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  selectedColor = selectedColors[0]||'';
 }
 
 /* ============================================================
@@ -1428,10 +1456,9 @@ function selectColorDot(el, color){
    ============================================================ */
 function addToCartFromModal(){
   if(!currentProduct) return;
-  const hasSizes = currentProduct.taille && currentProduct.taille.split(',').filter(Boolean).length > 1;
-  if(hasSizes && selectedSizes.length === 0){ showToast('يرجى اختيار المقاس'); return; }
-  const sizeLabel = selectedSizes.length > 0 ? selectedSizes.join(' + ') : '';
-  addToCart(currentProduct, sizeLabel, selectedColor||'', modalQty);
+  const sizeLabel   = selectedSizes.length > 0 ? selectedSizes.join(' + ') : '';
+  const colorLabel  = selectedColors.length > 0 ? selectedColors.join(' + ') : (selectedColor||'');
+  addToCart(currentProduct, sizeLabel, colorLabel, modalQty);
   closeModal();
 }
 
@@ -1510,10 +1537,9 @@ function closeCart(){
    ============================================================ */
 function buyNow(){
   if(!currentProduct) return;
-  const hasSizes = currentProduct.taille && currentProduct.taille.split(',').filter(Boolean).length > 1;
-  if(hasSizes && selectedSizes.length === 0){ showToast('يرجى اختيار المقاس'); return; }
-  const sizeLabel = selectedSizes.length > 0 ? selectedSizes.join(' + ') : '';
-  orderItems = [{...currentProduct, size: sizeLabel, color: selectedColor, qty: modalQty}];
+  const sizeLabel  = selectedSizes.length > 0 ? selectedSizes.join(' + ') : '';
+  const colorLabel = selectedColors.length > 0 ? selectedColors.join(' + ') : (selectedColor||'');
+  orderItems = [{...currentProduct, size: sizeLabel, color: colorLabel, qty: modalQty}];
   closeModal();
   openOrderForm();
 }
@@ -1593,7 +1619,7 @@ async function submitOrder(){
     telephone: phone,
     wilaya,
     livraison: selectedLivraison==='domicile'?'توصيل للمنزل':'مكتب التوصيل',
-    Produits: orderItems.map(i=>`${i.nom}×${i.qty||1}`).join(' | '),
+    Produits: orderItems.map(i=>`${i.nom}×${i.qty||1}${i.size?' مقاس:'+i.size:''}${i.color?' لون:'+i.color:''}`).join(' | '),
     total,
     status: 'جديد',
     note,
@@ -1604,13 +1630,19 @@ async function submitOrder(){
     // Send to Telegram directly
     const TG_TOKEN = '8599457433:AAHuIa7qAhl5vxKPTw8tolQOhQXQiNyA_uU';
     const TG_CHAT  = '-5107361887';
+    const itemsDetail = orderItems.map(i=>{
+      let line = i.nom + ' × ' + (i.qty||1);
+      if(i.size)  line += ' | مقاس: ' + i.size;
+      if(i.color) line += ' | لون: '  + i.color;
+      return line;
+    }).join('\n  ');
     const msg = 
       '🛍️ طلب جديد: ' + orderData.num_comnd + '\n' +
       '👤 الاسم: ' + orderData.nom_client + '\n' +
       '📞 الهاتف: ' + orderData.telephone + '\n' +
       '📍 الولاية: ' + orderData.wilaya + '\n' +
       '🚚 التوصيل: ' + orderData.livraison + '\n' +
-      '📦 المنتجات: ' + orderData.Produits + '\n' +
+      '📦 المنتجات:\n  ' + itemsDetail + '\n' +
       '💰 المجموع: ' + orderData.total + ' دج';
     fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
       method: 'POST',
