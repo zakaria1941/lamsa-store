@@ -1630,10 +1630,28 @@ async function submitOrder(){
     // Send to Telegram directly
     const TG_TOKEN = '8599457433:AAHuIa7qAhl5vxKPTw8tolQOhQXQiNyA_uU';
     const TG_CHAT  = '-5107361887';
+    // Build color name from hex using COLOR_MAP
+    const HEX_TO_NAME = {
+      '#111111':'أسود','#ffffff':'أبيض','#e53935':'أحمر','#1565c0':'أزرق',
+      '#2e7d32':'أخضر','#f9a825':'أصفر','#e65100':'برتقالي','#f06292':'وردي',
+      '#6a1b9a':'بنفسجي','#5d4037':'بني','#757575':'رمادي','#c8a97e':'بيج',
+      '#d4af37':'ذهبي','#9e9e9e':'فضي','#1a237e':'كحلي','#00796b':'تركوازي',
+      '#33691e':'زيتي','#880e4f':'خمري','#fff8e1':'كريمي','#4fc3f7':'سماوي',
+      '#ad1457':'أرجواني','#283593':'نيلي','#cccccc':'رمادي فاتح'
+    };
+    function getColorName(c){
+      if(!c) return '';
+      // If it's a hex code, look up the name
+      if(c.startsWith('#')) return HEX_TO_NAME[c.toLowerCase()] || c;
+      return c;
+    }
     const itemsDetail = orderItems.map(i=>{
       let line = i.nom + ' × ' + (i.qty||1);
       if(i.size)  line += ' | مقاس: ' + i.size;
-      if(i.color) line += ' | لون: '  + i.color;
+      if(i.color){
+        const colorNames = i.color.split(' + ').map(c=>getColorName(c.trim())).join(' + ');
+        line += ' | لون: ' + colorNames;
+      }
       return line;
     }).join('\n  ');
     const msg = 
